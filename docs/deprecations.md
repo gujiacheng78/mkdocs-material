@@ -12,17 +12,20 @@ not be used anymore.
 
 ### Redirect
 
-:octicons-archive-24: Deprecated: 5.5.0 ·
-:octicons-trash-24: Removal: 6.x
+:octicons-archive-24: Deprecated: 5.5 ·
+:octicons-trash-24: Removed: 6.0
 
 The `redirect` key, which could be added via [Metadata][1], allowed to
 specify a redirect from within a document to a new address, which is a good
 idea when moving content around:
 
-``` markdown
+``` bash
 ---
 redirect: /path/to/new/file
 ---
+
+# Document title
+...
 ```
 
 The [redirects][2] plugin provides the ability to define redirect mappings via
@@ -47,18 +50,21 @@ plugins:
 
 ### Source link
 
-:octicons-archive-24: Deprecated: 5.5.0 ·
-:octicons-trash-24: Removal: 6.x
+:octicons-archive-24: Deprecated: 5.5 ·
+:octicons-trash-24: Removed: 6.0
 
 The `source` and `path` keys, which could be added via [Metadata][1], showed
 a source icon at the top right corner of a document, linking a document to a
 single source file:
 
-``` markdown
+``` bash
 ---
 path: tree/master/docs
 source: deprecations.md
 ---
+
+# Document title
+...
 ```
 
 Only a single source file could be linked, which is useless if a document refers
@@ -77,17 +83,20 @@ at arbitrary positions in any document.
 
 ### Hero
 
-:octicons-archive-24: Deprecated: 5.5.0 ·
-:octicons-trash-24: Removal: 6.x
+:octicons-archive-24: Deprecated: 5.5 ·
+:octicons-trash-24: Removed: 6.0
 
 The `hero` key, which could be added via [Metadata][1], allowed to render a
 simple, text-only and page-local teaser text as part of a document. It could
 be set from front matter with:
 
-``` markdown
+``` bash
 ---
 hero: Lorem ipsum dolor sit amet
 ---
+
+# Document title
+...
 ```
 
 The recommended way is to [override the `hero` block][5] via [theme
@@ -96,19 +105,46 @@ templates can be shared among multiple pages:
 
 === "Markdown"
 
-    ``` markdown
+    ``` bash
     ---
-    template: overrides/hero.html
+    template: hero.html
     ---
+
+    # Document title
+    ...
     ```
 
 === "Template"
 
     ``` html
+    {% extends "base.html" %}
+
     {% block hero %}
       <!-- Add custom hero here -->
     {% endblock %}
     ```
 
-  [5]: customization.md#overriding-blocks
+  [5]: customization.md#overriding-blocks-recommended
   [6]: customization.md#extending-the-theme
+
+## Docker image
+
+### Bundled plugins
+
+:octicons-archive-24: Deprecated: 5.5 ·
+:octicons-trash-24: Removed: 6.0
+
+Over the last years, the Docker image has continually increased in size. For CI
+it's important that download times are as short as possible, which is why the
+following plugins will be removed:
+
+- [mkdocs-awesome-pages-plugin][7]
+- [mkdocs-git-revision-date-localized-plugin][8]
+
+Note that it's trivial to install plugins inside the Docker image before
+building your documentation. See the [installation guide][9] for a step-by-step
+guide.
+
+  [7]: https://github.com/lukasgeiter/mkdocs-awesome-pages-plugin
+  [8]: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin
+  [9]: getting-started.md#with-docker

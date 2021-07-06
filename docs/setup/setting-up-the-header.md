@@ -17,25 +17,19 @@ It also includes the [search bar][1] and a place to display your project's
 ### Automatic hiding
 
 [:octicons-file-code-24: Source][3] · 
-:octicons-unlock-24: Feature flag · 
-:octicons-beaker-24: Experimental ·
-[:octicons-heart-fill-24:{: .tx-heart } Insiders only][3]{: .tx-insiders }
+:octicons-unlock-24: Feature flag
 
-When _auto-hiding_ is activated, the header is automatically hidden when the
-user scrolls past a certain threshold, leaving more space for content. It can
-be enabled via `mkdocs.yml` with:
+When _autohiding_ is enabled, the header is automatically hidden when the
+user scrolls past a certain threshold, leaving more space for content. Add the
+following lines to `mkdocs.yml`:
 
 ``` yaml
 theme:
   features:
-    - header.hide
+    - header.autohide
 ```
 
-_Give this feature a try on [the official documentation][4] built with Material
-for MkDocs Insiders!_
-
-  [3]: ../insiders.md
-  [4]: https://squidfunk.github.io/mkdocs-material-insiders/
+  [3]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/layout/_header.scss
 
 ## Customization
 
@@ -44,8 +38,8 @@ for MkDocs Insiders!_
 Material for MkDocs includes an announcement bar, which is the perfect place to
 display project news or other important information to the user. When the user
 scrolls past the header, the bar will automatically disappear. In order to add
-an announcement bar, [extend the theme][5] and [override the `announce`
-block][6], which is empty by default:
+an announcement bar, [extend the theme][4] and [override the `announce`
+block][5], which is empty by default:
 
 ``` html
 {% block announce %}
@@ -53,5 +47,5 @@ block][6], which is empty by default:
 {% endblock %}
 ```
 
-  [5]: ../customization.md#extending-the-theme
-  [6]: ../customization.md#overriding-blocks
+  [4]: ../customization.md#extending-the-theme
+  [5]: ../customization.md#overriding-blocks-recommended
