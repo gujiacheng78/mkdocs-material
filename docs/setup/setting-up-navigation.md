@@ -1,50 +1,319 @@
----
-template: overrides/main.html
----
-
 # Setting up navigation
 
-A clear and concise navigation structure is an important aspect of good project 
-documentation. Material for MkDocs provides several options to configure the
-behavior of navigational elements, some of those through _feature flags_.
+A clear and concise navigation structure is an important aspect of good project
+documentation. Material for MkDocs provides a multitude of options to configure
+the behavior of navigational elements, including [tabs] and [sections], and one
+of its flagship features: [instant loading].
+
+  [tabs]: #navigation-tabs
+  [sections]: #navigation-sections
+  [instant loading]: #instant-loading
+
+Additional navigation can be configured [in the footer] as well as with the
+[tags plugin]. The [blog plugin] also sets up additional navigation.
+
+[in the footer]: setting-up-the-footer.md#navigation
+[tags plugin]: ../plugins/tags.md
+[blog plugin]: ../plugins/blog.md
 
 ## Configuration
 
 ### Instant loading
 
-[:octicons-file-code-24: Source][1] · 
-:octicons-unlock-24: Feature flag · 
-:octicons-beaker-24: Experimental
+<!-- md:version 5.0.0 -->
+<!-- md:feature -->
 
-When _instant loading_ is activated, clicks on all internal links will be
-intercepted and dispatched via [XHR][2] without fully reloading the page. It
-can be enabled via `mkdocs.yml` with:
+When instant loading is enabled, clicks on all internal links will be
+intercepted and dispatched via [XHR] without fully reloading the page. Add
+the following lines to `mkdocs.yml`:
 
 ``` yaml
 theme:
   features:
-    - instant
+    - navigation.instant
 ```
 
 The resulting page is parsed and injected and all event handlers and components
-are rebound automatically. This means that __Material for MkDocs behaves like a
-Single Page Application__, which is especially useful for large documentation
-sites that come with a massive search index, as the search index will now
-remain intact in-between document switches.
+are rebound automatically, i.e., __Material for MkDocs now behaves like a Single
+Page Application__. Now, the search index survives navigation, which is
+especially useful for large documentation sites.
 
-  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/javascripts/integrations/instant/index.ts
-  [2]: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+!!! info "The [`site_url`][mkdocs.site_url] setting must be set"
+
+    Note that you must set [`site_url`][mkdocs.site_url] when using instant
+    navigation, as instant navigation relies on the generated `sitemap.xml`
+    which will be empty if this setting is omitted. Example:
+
+    ``` yaml
+    site_url: https://example.com
+    ```
+
+  [XHR]: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+
+#### Instant prefetching
+
+<!-- md:version 9.7.0 -->
+<!-- md:feature -->
+<!-- md:flag experimental -->
+
+Instant prefetching is a new experimental feature that will start to fetch a
+page once the user hovers over a link. This will reduce the perceived loading
+time for the user, especially on slow connections, as the page will be available
+immediately upon navigation. Enable it with:
+
+``` yaml
+theme:
+  features:
+    - navigation.instant
+    - navigation.instant.prefetch
+```
+
+#### Progress indicator
+
+<!-- md:version 9.4.3 -->
+<!-- md:feature -->
+<!-- md:flag experimental -->
+
+In order to provide a better user experience on slow connections when using
+instant navigation, a progress indicator can be enabled. It will be shown at
+the top of the page and will be hidden once the page has fully loaded. You can
+enable it in `mkdocs.yml` with:
+
+``` yaml
+theme:
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+```
+
+The progress indicator will only show if the page hasn't finished loading after
+400ms, so that fast connections will never show it for a better instant
+experience.
+
+### Instant previews
+
+<!-- md:version 9.7.0 -->
+<!-- md:feature -->
+<!-- md:flag experimental -->
+
+Instant previews are a brand new feature that allow the user to preview another
+site of your documentation without navigating to it. They can be very helpful to
+keep the user in context. Instant previews can be enabled on any header link
+with the `data-preview` attribute:
+
+```` markdown title="Link with instant preview"
+``` markdown
+[Attribute Lists](#){ data-preview }
+```
+````
+
+<div class="result" markdown>
+
+[Attribute Lists](extensions/python-markdown.md#attribute-lists){ data-preview }
+
+</div>
+
+!!! info "Limitations"
+
+    Instant previews are still an experimental feature and currently limited to
+    headerlinks. This means, you can use them on any internal link that points
+    to a header on another page, but not other elements with `id` attributes.
+    After we have gathered enough feedback, we will consider extending this
+    feature to other, and possibly arbitrary elements.
+
+#### Automatic previews
+
+<!-- md:version 9.7.0 -->
+<!-- md:extension -->
+<!-- md:flag experimental -->
+
+The recommended way to work with instant previews is to use the Markdown
+extension that is included with Material for MkDocs, as it allows you to enable
+instant previews on a per-page or per-section level for your documentation:
+
+``` yaml
+markdown_extensions:
+  - material.extensions.preview:
+      configurations:
+        - targets:
+            include:
+              - changelog/index.md
+              - customization.md
+              - insiders/changelog/*
+              - setup/extensions/*
+```
+
+The above configuration is what we use for our documentation. We've enabled
+instant previews for our changelogs, customization guide, and Insiders sections,
+as well as for all Markdown extensions that we support.
+
+!!! info "Full configuration example"
+
+    ``` yaml
+    markdown_extensions:
+      - material.extensions.preview:
+          configurations:
+            - sources: # (1)!
+                include:
+                  - ...
+                exclude:
+                  - ...
+              targets: # (2)!
+                include:
+                  - ...
+                exclude:
+                  - ...
+    ```
+
+    1.  Sources specify the pages _on_ which instant previews should be enabled.
+        If this setting is omitted, instant previews will be enabled on all
+        pages. You can use patterns to include or exclude pages. Exclusion is
+        evaluated on top of inclusion, so if a page is matched by both, it will
+        be excluded.
+
+        Note that you can define multiple items under the `configurations`
+        setting, which allows to precisely control where instant previews are
+        shown.
+
+    2.  Targets specify the pages _to_ which instant previews should be enabled.
+        This is the recommended way to enable instant previews.
+---
+
+Instant previews can also be enabled globally by adding the following lines to
+`mkdocs.yml`, which will enable instant previews for all header links,
+alleviating the need to add data attributes:
+
+``` yaml
+theme:
+  features:
+    - navigation.instant.preview
+```
+
+!!! info "The [`site_url`][mkdocs.site_url] setting must be set"
+
+    Note that you must set [`site_url`][mkdocs.site_url] when using instant
+    previews, as instant previews rely on the generated `sitemap.xml`
+    which will be empty if this setting is omitted. Example:
+
+    ``` yaml
+    site_url: https://example.com
+    ```
+
+### Anchor tracking
+
+<!-- md:version 8.0.0 -->
+<!-- md:feature -->
+
+When anchor tracking is enabled, the URL in the address bar is automatically
+updated with the active anchor as highlighted in the table of contents. Add the
+following lines to `mkdocs.yml`:
+
+``` yaml
+theme:
+  features:
+    - navigation.tracking
+```
+
+### Navigation tabs
+
+<!-- md:version 1.1.0 -->
+<!-- md:feature -->
+
+When tabs are enabled, top-level sections are rendered in a menu layer below
+the header for viewports above `1220px`, but remain as-is on mobile.[^1] Add
+the following lines to `mkdocs.yml`:
+
+  [^1]:
+    Prior to <!-- md:version 6.2.0 -->, navigation tabs had a slightly different
+    behavior. All top-level pages (i.e. all top-level entries directly
+    referring to a `*.md` file) defined inside the `nav` entry of `mkdocs.yml`
+    were grouped under the first tab which received the title of the first page.
+    This made it impossible to include a top-level page (or external link) as a
+    tab item, as was reported in #1884 and #2072. From <!-- md:version 6.2.0 -->
+    on, navigation tabs include all top-level pages and sections.
+
+``` yaml
+theme:
+  features:
+    - navigation.tabs
+```
+
+=== "With tabs"
+
+    [![Navigation tabs enabled]][Navigation tabs enabled]
+
+=== "Without"
+
+    [![Navigation tabs disabled]][Navigation tabs disabled]
+
+  [Navigation tabs enabled]: ../assets/screenshots/navigation-tabs.png
+  [Navigation tabs disabled]: ../assets/screenshots/navigation.png
+
+#### Sticky navigation tabs
+
+<!-- md:version 7.3.0 -->
+<!-- md:feature -->
+
+When sticky tabs are enabled, navigation tabs will lock below the header and
+always remain visible when scrolling down. Just add the following two feature
+flags to `mkdocs.yml`:
+
+``` yaml
+theme:
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+```
+
+=== "With sticky tabs"
+
+    [![Sticky navigation tabs enabled]][Sticky navigation tabs enabled]
+
+=== "Without"
+
+    [![Sticky navigation tabs disabled]][Sticky navigation tabs disabled]
+
+  [Sticky navigation tabs enabled]: ../assets/screenshots/navigation-tabs-sticky.png
+  [Sticky navigation tabs disabled]: ../assets/screenshots/navigation-tabs-collapsed.png
+
+### Navigation sections
+
+<!-- md:version 6.2.0 -->
+<!-- md:feature -->
+
+When sections are enabled, top-level sections are rendered as groups in the
+sidebar for viewports above `1220px`, but remain as-is on mobile. Add the
+following lines to `mkdocs.yml`:
+
+``` yaml
+theme:
+  features:
+    - navigation.sections
+```
+
+=== "With sections"
+
+    [![Navigation sections enabled]][Navigation sections enabled]
+
+=== "Without"
+
+    [![Navigation sections disabled]][Navigation sections disabled]
+
+  [Navigation sections enabled]: ../assets/screenshots/navigation-sections.png
+  [Navigation sections disabled]: ../assets/screenshots/navigation.png
+
+Both feature flags, [`navigation.tabs`][tabs] and
+[`navigation.sections`][sections], can be combined with each other. If both
+feature flags are enabled, sections are rendered for level 2 navigation items.
 
 ### Navigation expansion
 
-[:octicons-file-code-24: Source][3] ·
-:octicons-unlock-24: Feature flag ·
-:octicons-beaker-24: Experimental ·
-[:octicons-heart-fill-24:{: .tx-heart } Insiders only][3]{: .tx-insiders }
+<!-- md:version 6.2.0 -->
+<!-- md:feature -->
 
-When `navigation.expand` is activated, the left sidebar will expand all
-collapsible subsections by default, so the user doesn't have to do it manually.
-It can be enabled via `mkdocs.yml` with:
+When expansion is enabled, the left sidebar will expand all collapsible
+subsections by default, so the user doesn't have to open subsections manually.
+Add the following lines to `mkdocs.yml`:
 
 ``` yaml
 theme:
@@ -52,165 +321,250 @@ theme:
     - navigation.expand
 ```
 
-  [3]: ../insiders.md
+=== "With expansion"
 
-### Navigation tabs
+    [![Navigation expansion enabled]][Navigation expansion enabled]
 
-[:octicons-file-code-24: Source][4] · :octicons-unlock-24: Feature flag
+=== "Without"
 
-When _tabs_ are activated, top-level sections are rendered in a menu layer
-below the header on big screens (but not when the sidebar is hidden). It can be
-enabled via `mkdocs.yml` with:
+    [![Navigation expansion disabled]][Navigation expansion disabled]
+
+  [Navigation expansion enabled]: ../assets/screenshots/navigation-expand.png
+  [Navigation expansion disabled]: ../assets/screenshots/navigation.png
+
+### Navigation path <small>Breadcrumbs</small> { id=navigation-path }
+
+<!-- md:version 9.7.0 -->
+<!-- md:feature -->
+<!-- md:flag experimental -->
+
+When navigation paths are activated, a breadcrumb navigation is rendered above
+the title of each page, which might make orientation easier for users visiting your
+documentation on devices with smaller screens. Add the following lines to
+`mkdocs.yml`:
 
 ``` yaml
 theme:
   features:
-    - tabs
+    - navigation.path
 ```
 
-Note that all __top-level pages__ (i.e. all top-level entries that directly
-refer to an `*.md` file) defined inside the [`nav`][5] entry of `mkdocs.yml`
-will be grouped under the first tab which will receive the title of the first
-page.
+=== "With navigation path"
 
-This means that there will effectively be no collapsible subsections for the
-first tab, because each subsection is rendered as another tab. If you want more
-fine-grained control, _i.e. collapsible subsections for the first tab_, you can
-use __top-level sections__, so that the top-level is entirely made up of
-sections. This is illustrated in the following example:
+    [![Navigation path enabled]][Navigation path enabled]
 
-=== "Top-level pages"
+=== "Without"
 
-    ``` yaml
-    nav:
-      - Tab 1 + Page 1.1
-      - Page 1.2
-      - Tab 2:
-        - Page 2.1
-        - Page 2.2
-        - Page 2.3
-      - Page 1.3
-    ```
+    [![Navigation path disabled]][Navigation path disabled]
 
-=== "Top-level sections"
+  [Navigation path enabled]: ../assets/screenshots/navigation-path-on.png
+  [Navigation path disabled]: ../assets/screenshots/navigation-path-off.png
 
-    ``` yaml
-    nav:
-      - Tab 1:
-        - Page 1.1
-        - Page 1.2
-        - Page 1.3
-      - Tab 2:
-        - Page 2.1
-        - Page 2.2
-        - Page 2.3
-    ```
+### Navigation pruning
 
-Note that tabs are only shown for larger screens, so make sure that navigation
-is plausible on mobile devices. As another example, see the [`mkdocs.yml`][6]
-used to render these pages.
+<!-- md:version 9.2.0 -->
+<!-- md:feature -->
+<!-- md:flag experimental -->
 
-  [4]: https://github.com/squidfunk/mkdocs-material/blob/master/src/partials/tabs.html
-  [5]: https://www.mkdocs.org/user-guide/configuration/#nav
-  [6]: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml
+When pruning is enabled, only the visible navigation items are included in the
+rendered HTML, __reducing the size of the built site by 33% or more__. Add the
+following lines to `mkdocs.yml`:
+
+``` yaml
+theme:
+  features:
+    - navigation.prune # (1)!
+```
+
+1.  This feature flag is not compatible with
+    [`navigation.expand`][navigation.expand], as navigation expansion requires
+    the complete navigation structure.
+
+This feature flag is especially useful for documentation sites with 100+ or even
+1,000+ of pages, as the navigation makes up a significant fraction of the HTML.
+Navigation pruning will replace all expandable sections with links to the first
+page in that section (or the section index page).
+
+  [navigation.expand]: #navigation-expansion
+
+### Section index pages
+
+<!-- md:version 7.3.0 -->
+<!-- md:feature -->
+
+When section index pages are enabled, documents can be directly attached to
+sections, which is particularly useful for providing overview pages. Add the
+following lines to `mkdocs.yml`:
+
+``` yaml
+theme:
+  features:
+    - navigation.indexes # (1)!
+```
+
+1.  This feature flag is not compatible with [`toc.integrate`][toc.integrate],
+    as sections cannot host the table of contents due to missing space.
+
+=== "With section index pages"
+
+    [![Section index pages enabled]][Section index pages enabled]
+
+=== "Without"
+
+    [![Section index pages disabled]][Section index pages disabled]
+
+In order to link a page to a section, create a new document with the name
+`index.md` in the respective folder, and add it to the beginning of your
+navigation section:
+
+``` yaml
+nav:
+  - Section:
+    - section/index.md # (1)!
+    - Page 1: section/page-1.md
+    ...
+    - Page n: section/page-n.md
+```
+
+1.  MkDocs also considers files called `README.md` as [index pages].
+
+  [Section index pages enabled]: ../assets/screenshots/navigation-index-on.png
+  [Section index pages disabled]: ../assets/screenshots/navigation-index-off.png
+  [toc.integrate]: #navigation-integration
+  [index pages]: https://www.mkdocs.org/user-guide/writing-your-docs/#index-pages
 
 ### Table of contents
 
-[:octicons-file-code-24: Source][7] · [:octicons-workflow-24: Extension][8]
+#### Anchor following
 
-The [Table of contents][9] extension, which is part of the standard Markdown
-library, provides some options that are supported by Material for MkDocs to
-customize its appearance:
+<!-- md:version 8.5.0 -->
+<!-- md:feature -->
+<!-- md:flag experimental -->
 
-`permalink`{: #permalink }
+When anchor following for the [table of contents] is enabled, the sidebar is
+automatically scrolled so that the active anchor is always visible. Add the
+following lines to `mkdocs.yml`:
 
-:   :octicons-milestone-24: Default: `false` – This option adds an anchor link
-    containing the paragraph symbol `¶` or another custom symbol at the end of
-    each headline, exactly like on the page you're currently viewing, which
-    Material for MkDocs will make appear on hover:
+``` yaml
+theme:
+  features:
+    - toc.follow
+```
 
-    === "¶"
+#### Navigation integration
 
-        ``` yaml
-        markdown_extensions:
-          - toc:
-              permalink: true
-        ```
+<!-- md:version 6.2.0 -->
+<!-- md:feature -->
 
-    === "⚓︎"
+When navigation integration for the [table of contents] is enabled, it is always
+rendered as part of the navigation sidebar on the left. Add the following lines
+to `mkdocs.yml`:
 
-        ``` yaml
-        markdown_extensions:
-          - toc:
-              permalink: ⚓︎
-        ```
+``` yaml
+theme:
+  features:
+    - toc.integrate # (1)!
+```
 
-`slugify`{: #slugify }
+1.  This feature flag is not compatible with
+    [`navigation.indexes`][navigation.indexes], as sections cannot host the
+    table of contents due to missing space.
 
-:   :octicons-milestone-24: Default: `headerid.slugify` – This option allows for 
-    customization of the slug function. For some languages, the default may not
-    produce good and readable identifiers. Consider using another slug function
-    like for example those from [Python Markdown Extensions][10]:
+=== "With navigation integration"
 
-    === "Unicode"
+    [![Navigation integration enabled]][Navigation integration enabled]
 
-        ``` yaml
-        markdown_extensions:
-          - toc:
-              slugify: !!python/name:pymdownx.slugs.uslugify
-        ```
+=== "Without"
 
-    === "Unicode, case-sensitive"
+    [![Navigation integration disabled]][Navigation integration disabled]
 
-        ``` yaml
-        markdown_extensions:
-          - toc:
-              slugify: !!python/name:pymdownx.slugs.uslugify_cased
-        ```
+  [table of contents]: extensions/python-markdown.md#table-of-contents
+  [Navigation integration enabled]: ../assets/screenshots/toc-integrate.png
+  [Navigation integration disabled]: ../assets/screenshots/navigation-tabs.png
+  [navigation.indexes]: #section-index-pages
 
-`toc_depth`{: #toc_depth }
+### Back-to-top button
 
-:   :octicons-milestone-24: Default: `6` – Define the range of levels to be
-    included in the table of contents. This may be useful for project
-    documentation with deeply structured headings to decrease the length of the
-    table of contents, or to remove the table of contents altogether:
+<!-- md:version 7.1.0 -->
+<!-- md:feature -->
 
-    === "Hide levels 4-6"
+A back-to-top button can be shown when the user, after scrolling down, starts
+to scroll up again. It's rendered centered and just below the header. Add the
+following lines to `mkdocs.yml`:
 
-        ``` yaml
-        markdown_extensions:
-          - toc:
-              toc_depth: 3
-        ```
+``` yaml
+theme:
+  features:
+    - navigation.top
+```
 
-    === "Hide table of contents"
+## Usage
 
-        ``` yaml
-        markdown_extensions:
-          - toc:
-              toc_depth: 0
-        ```
+### Hiding the sidebars
 
-_Material for MkDocs doesn't provide official support for the other options of
-this extension, so they may be supported but can also yield weird results. Use
-them at your own risk._
+<!-- md:version 6.2.0 -->
+<!-- md:flag metadata -->
 
-  [7]: https://github.com/squidfunk/mkdocs-material/blob/master/src/partials/toc.html
-  [8]: https://python-markdown.github.io/extensions/toc/
-  [9]: https://python-markdown.github.io/extensions/toc/#usage
-  [10]: https://facelessuser.github.io/pymdown-extensions/extras/slugs/
+The navigation and/or table of contents sidebars can be hidden for a document
+with the front matter `hide` property. Add the following lines at the top of a
+Markdown file:
+
+``` yaml
+---
+hide:
+  - navigation
+  - toc
+---
+
+# Page title
+...
+```
+
+=== "Hide navigation"
+
+    [![Hide navigation enabled]][Hide navigation enabled]
+
+=== "Hide table of contents"
+
+    [![Hide table of contents enabled]][Hide table of contents enabled]
+
+=== "Hide both"
+
+    [![Hide both enabled]][Hide both enabled]
+
+  [Hide navigation enabled]: ../assets/screenshots/hide-navigation.png
+  [Hide table of contents enabled]: ../assets/screenshots/hide-toc.png
+  [Hide both enabled]: ../assets/screenshots/hide-navigation-toc.png
+
+### Hiding the navigation path
+
+<!-- md:version 9.7.0 -->
+<!-- md:flag metadata -->
+
+While the [navigation path] is rendered above the main headline, sometimes, it
+might be desirable to hide it for a specific page, which can be achieved with
+the front matter `hide` property:
+
+``` yaml
+---
+hide:
+  - path
+---
+
+# Page title
+...
+```
+
+  [navigation path]: #navigation-path
 
 ## Customization
 
 ### Keyboard shortcuts
 
-[:octicons-file-code-24: Source][11] ·
-:octicons-mortar-board-24: Difficulty: _easy_
-
 Material for MkDocs includes several keyboard shortcuts that make it possible
-to navigate your project documentation via keyboard. There're two modes:
+to navigate your project documentation via keyboard. There are two modes:
 
-`search`{: #search }
+<!-- md:option mode:search -->
 
 :   This mode is active when the _search is focused_. It provides several key
     bindings to make search accessible and navigable via keyboard:
@@ -219,7 +573,7 @@ to navigate your project documentation via keyboard. There're two modes:
     * ++esc++ , ++tab++ : close search dialog
     * ++enter++ : follow selected result
 
-`global`{: #global }
+<!-- md:option mode:global -->
 
 :   This mode is active when _search is not focussed_ and when there's no other
     focussed element that is susceptible to keyboard input. The following keys
@@ -230,21 +584,66 @@ to navigate your project documentation via keyboard. There're two modes:
     * ++n++ , ++period++ : go to next page
 
 Let's say you want to bind some action to the ++x++ key. By using [additional
-JavaScript][12], you can subscribe to the `keyboard$` observable and attach
+JavaScript], you can subscribe to the `keyboard$` observable and attach
 your custom event listener:
 
-``` js
-app.keyboard$.subscribe(key => {
-  if (key.mode === "global" && key.type === "x") {
-    /* Add custom keyboard handler here */
-    key.claim()
-  }
-})
-```
+=== ":octicons-file-code-16: `docs/javascripts/shortcuts.js`"
 
-The call to `#!js key.claim()` will essentially execute `#!js preventDefault()`
-on the underlying event, so the keypress will not propagate further and touch
-other event listeners.
+    ``` js
+    keyboard$.subscribe(function(key) {
+      if (key.mode === "global" && key.type === "x") {
+        /* Add custom keyboard handler here */
+        key.claim() // (1)!
+      }
+    })
+    ```
 
-  [11]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/javascripts/integrations/keyboard/index.ts
-  [12]: ../customization.md#additional-javascript
+    1.  The call to `key.claim()` will execute `preventDefault()` on the
+        underlying event, so the keypress will not propagate further and
+        touch other event listeners.
+
+=== ":octicons-file-code-16: `mkdocs.yml`"
+
+    ``` yaml
+    extra_javascript:
+      - javascripts/shortcuts.js
+    ```
+
+  [additional JavaScript]: ../customization.md#additional-javascript
+
+### Content area width
+
+The width of the content area is set so the length of each line doesn't exceed
+80-100 characters, depending on the width of the characters. While this
+is a reasonable default, as longer lines tend to be harder to read, it may be
+desirable to increase the overall width of the content area, or even make it
+stretch to the entire available space.
+
+This can easily be achieved with an [additional style sheet] and a few lines
+of CSS:
+
+=== ":octicons-file-code-16: `docs/stylesheets/extra.css`"
+
+    ``` css
+    .md-grid {
+      max-width: 1440px; /* (1)! */
+    }
+    ```
+
+    1.  If you want the content area to always stretch to the available screen
+        space, reset `max-width` with the following CSS:
+
+        ``` css
+        .md-grid {
+          max-width: initial;
+        }
+        ```
+
+=== ":octicons-file-code-16: `mkdocs.yml`"
+
+    ``` yaml
+    extra_css:
+      - stylesheets/extra.css
+    ```
+
+  [additional style sheet]: ../customization.md#additional-css
